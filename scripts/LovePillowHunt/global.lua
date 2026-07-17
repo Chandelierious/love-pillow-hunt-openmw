@@ -53,18 +53,19 @@ local function ensureStink(pillow)
     s.flies:teleport(pillow.cell, pillow.position)
   end)
   if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
-  -- Three small quarter-opacity clouds spread around the pillow ("3 or 4
-  -- clouds a quarter of that size and opacity" — round-12 direction).
+  -- Four dark clouds, sporadic spread and varied sizes ("wider, different
+  -- sizes, spread out sporadically so it looks more natural" — round-14).
   s.clouds = {}
-  local offsets = {
-    { x = 22, y = 4 }, { x = -16, y = 18 }, { x = -6, y = -22 },
-  }
-  for ci, off in ipairs(offsets) do
+  for ci = 1, 4 do
     ok, err = pcall(function()
+      local angle = math.random() * 2 * math.pi
+      local dist = 10 + math.random() * 30
       local c = world.createObject(shared.CLOUD_RECORD, 1)
-      c:setScale(0.09)
+      c:setScale(0.08 + math.random() * 0.10)
       c:teleport(pillow.cell, util.vector3(
-        pillow.position.x + off.x, pillow.position.y + off.y, pillow.position.z))
+        pillow.position.x + math.cos(angle) * dist,
+        pillow.position.y + math.sin(angle) * dist,
+        pillow.position.z))
       s.clouds[ci] = c
     end)
     if not ok then print('LPH global: stink cloud spawn failed: ' .. tostring(err)) end
