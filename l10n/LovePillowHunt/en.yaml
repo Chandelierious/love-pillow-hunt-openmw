@@ -1,0 +1,4 @@
+# Localization stub — setting names/descriptions are passed as literal
+# strings; this file exists so the engine finds a language file for the
+# l10n context and stops warning.
+LovePillowHunt: "The Great Love Pillow Hunt"
