@@ -68,7 +68,9 @@ local function onContentFilesLoaded()
       failed = failed + 3
     else
       for stage = 1, 3 do
-        local sid = shared.stageRecordId(base.id, stage)
+        -- id from the known name, not base.id (don't depend on the engine
+        -- populating .id on records created via content assignment)
+        local sid = shared.stageRecordId('lovepillow_' .. name, stage)
         local tag = shared.STAGE_TAGS[stage]
         -- derive from the base model path so slashes/prefix conventions match
         local stageModel, replaced = tostring(base.model):gsub('lovepillow_' .. name, 'lovepillo' .. tag .. '_' .. name)
