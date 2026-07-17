@@ -72,9 +72,11 @@ local function onContentFilesLoaded()
   attempt('stink cloud activator', function()
     content.activators.records[shared.CLOUD_RECORD] = {
       name = '',
-      -- the thin chimney wisp; the plain smoke_green column engulfed the
-      -- whole pillow (round-8 screenshot: "a little much")
-      model = 'meshes\\chimney_smoke_green.nif',
+      -- slowed copy of the vanilla green chimney wisp (particle timing is
+      -- baked into the NIF; tools/make_slow_smoke.py patches rise speed,
+      -- lifetime, and fade). The plain smoke_green column was "a little
+      -- much" (round-8), and the vanilla wisp rose too fast (round-9).
+      model = 'meshes\\lph\\stinkcloud.nif',
     }
   end)
 
