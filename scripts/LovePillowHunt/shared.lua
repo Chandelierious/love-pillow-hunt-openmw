@@ -54,9 +54,11 @@ for _, name in ipairs(shared.NAMES) do
   end
 end
 
--- Stink effect records (created by load.lua)
+-- Stink effect records. Flies activator is created by load.lua; the light
+-- is a VANILLA record (modelless, dynamic, slow green pulse) — custom light
+-- records with an empty model fail engine validation.
 shared.FLIES_RECORD = 'lph_flies'
-shared.LIGHT_RECORD = 'lph_stinklight'
+shared.LIGHT_RECORD = 'light_glowing_lichen_256_d'
 
 -- Display-name transform: ESP records are named "Body Pillow of X"; AJ's
 -- preferred scheme is "X Body Pillow". Names that don't match pass through.

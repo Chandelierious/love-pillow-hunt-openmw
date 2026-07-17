@@ -37,16 +37,33 @@ end
 
 local function ensureStink(pillow)
   if stink[pillow.id] then return end
+  -- Track FIRST, then attempt each piece independently: a failing piece must
+  -- never abort the others or leave spawned objects untracked (round-5: the
+  -- light record failing left untracked fly swarms leaked in the world).
+  local s = { pillow = pillow }
+  stink[pillow.id] = s
   local ok, err = pcall(function()
-    local flies = world.createObject(shared.FLIES_RECORD, 1)
-    flies:teleport(pillow.cell, pillow.position)
-    local light = world.createObject(shared.LIGHT_RECORD, 1)
-    light:teleport(pillow.cell, pillow.position)
-    stink[pillow.id] = { flies = flies, light = light, pillow = pillow }
-    -- Vanilla Flies sound record, same volume the vanilla emitter script uses
+    s.flies = world.createObject(shared.FLIES_RECORD, 1)
+    s.flies:teleport(pillow.cell, pillow.position)
+  end)
+  if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
+  ok, err = pcall(function()
+    s.light = world.createObject(shared.LIGHT_RECORD, 1)
+    s.light:teleport(pillow.cell, pillow.position)
+  end)
+  if not ok then print('LPH global: light spawn failed: ' .. tostring(err)) end
+  -- Vanilla Flies sound record, same volume the vanilla emitter script uses
+  ok, err = pcall(function()
     core.sound.playSound3d('flies', pillow, { loop = true, volume = 0.5 })
   end)
-  if not ok then print('LPH global: ensureStink failed: ' .. tostring(err)) end
+  if not ok then print('LPH global: buzz failed: ' .. tostring(err)) end
+end
+
+local function isTrackedEffect(object)
+  for _, s in pairs(stink) do
+    if s.flies == object or s.light == object then return true end
+  end
+  return false
 end
 
 -- Re-evaluate a pillow's visible stage + stink effects. May REPLACE the
@@ -121,6 +138,12 @@ end)
 local function onObjectActive(object)
   if shared.pillows[object.recordId] and not object:hasScript(shared.PILLOW_SCRIPT) then
     object:addScript(shared.PILLOW_SCRIPT)
+  end
+  -- Orphan sweep: fly swarms we spawned but lost track of (older bug left
+  -- some leaked in saves). Only OUR activator record — never touch vanilla
+  -- objects, and never a swarm that's currently tracked.
+  if object.recordId == shared.FLIES_RECORD and not isTrackedEffect(object) then
+    pcall(function() object:remove() end)
   end
 end
 
