@@ -27,11 +27,11 @@ local function onContentFilesLoaded()
     local base = content.miscs.records['lovepillow_' .. name]
     if not base then
       print('LPH load: base record missing: lovepillow_' .. name)
-      failed = failed + 2
+      failed = failed + 3
     else
-      for stage = 1, 2 do
+      for stage = 1, 3 do
         local sid = shared.stageRecordId(base.id, stage)
-        local tag = (stage == 1) and 'd' or 'f'
+        local tag = shared.STAGE_TAGS[stage]
         -- derive from the base model path so slashes/prefix conventions match
         local stageModel, replaced = tostring(base.model):gsub('lovepillow_' .. name, 'lovepillo' .. tag .. '_' .. name)
         local ok = attempt('stage record ' .. sid, function()

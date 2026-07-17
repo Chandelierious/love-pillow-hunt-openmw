@@ -101,7 +101,7 @@ local function applyStage(pillow, cleanliness)
     end
   end
 
-  if stage == 2 and stinkEffects and pillow.cell ~= nil then
+  if stage >= shared.STINK_STAGE and stinkEffects and pillow.cell ~= nil then
     ensureStink(pillow)
   else
     clearStink(pillow.id)

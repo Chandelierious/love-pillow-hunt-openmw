@@ -18,26 +18,33 @@ shared.NAMES = {
   'habasi', 'jiub', 'maiq', 'mehramilo', 'tarhiel', 'vivec',
 }
 
--- Visible dirt stages: 0 = clean look, 1 = dirty (<= 66), 2 = filthy (<= 33).
--- Stage 1/2 use load-context record variants with restained models.
+-- Visible dirt stages: 0 = clean, 1 = speckled (<= 85, appears early),
+-- 2 = dirty (<= 55), 3 = filthy (<= 30, dark overlapping pools + stink).
+-- Stages use load-context record variants with restained models.
+shared.STINK_STAGE = 3
+
 function shared.stageFor(cleanliness)
   local c = tonumber(cleanliness) or shared.MAX_CLEAN
-  if c <= 33 then return 2 end
-  if c <= 66 then return 1 end
+  if c <= 30 then return 3 end
+  if c <= 55 then return 2 end
+  if c <= 85 then return 1 end
   return 0
 end
 
 function shared.stageRecordId(baseId, stage)
-  if stage == 1 then return baseId .. '_d1' end
-  if stage == 2 then return baseId .. '_d2' end
+  if stage >= 1 and stage <= 3 then return baseId .. '_d' .. stage end
   return baseId
 end
+
+-- Model filename tag per stage (s = speckled, d = dirty, f = filthy)
+shared.STAGE_TAGS = { [1] = 's', [2] = 'd', [3] = 'f' }
 
 -- A pillow object spawned without script state (e.g. dropped from inventory)
 -- infers a plausible cleanliness from its own record's stage.
 function shared.seedCleanliness(stage)
-  if stage == 2 then return 20 end
-  if stage == 1 then return 55 end
+  if stage == 3 then return 15 end
+  if stage == 2 then return 45 end
+  if stage == 1 then return 70 end
   return shared.MAX_CLEAN
 end
 
@@ -48,7 +55,7 @@ for _, name in ipairs(shared.NAMES) do
   local base = 'lovepillow_' .. name
   local spell = 'lovepillow_sp_' .. name
   shared.pillows[base] = { id = base, spell = spell, base = base, stage = 0 }
-  for stage = 1, 2 do
+  for stage = 1, 3 do
     local sid = shared.stageRecordId(base, stage)
     shared.pillows[sid] = { id = sid, spell = spell, base = base, stage = stage }
   end
