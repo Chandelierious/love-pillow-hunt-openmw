@@ -69,9 +69,17 @@ local function onContentFilesLoaded()
       model = 'meshes\\r0\\f\\flies.nif',
     }
   end)
+  attempt('stink cloud activator', function()
+    content.activators.records[shared.CLOUD_RECORD] = {
+      name = '',
+      model = 'meshes\\smoke_green.nif',
+    }
+  end)
 
-  print(string.format('LPH load: %d stage records verified, %d failed; flies=%s',
-    made, failed, tostring(content.activators.records[shared.FLIES_RECORD] ~= nil)))
+  print(string.format('LPH load: %d stage records verified, %d failed; flies=%s cloud=%s',
+    made, failed,
+    tostring(content.activators.records[shared.FLIES_RECORD] ~= nil),
+    tostring(content.activators.records[shared.CLOUD_RECORD] ~= nil)))
 end
 
 return {

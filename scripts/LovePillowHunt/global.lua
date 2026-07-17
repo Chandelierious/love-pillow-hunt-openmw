@@ -15,8 +15,9 @@ local enabled = true
 local visibleDirt = true
 local stinkEffects = true
 
--- Stink effects (flies + green light + buzz) per filthy pillow.
--- Keyed by the pillow object's id: { flies = obj, light = obj, pillow = obj }
+-- Stink effects (flies + rising stink cloud + buzz) per filthy pillow.
+-- Keyed by the pillow object's id: { flies = obj, cloud = obj, pillow = obj }
+-- ('light' may appear in data loaded from older saves; always cleaned up.)
 local stink = {}
 
 local function clearStink(pillowId)
@@ -28,7 +29,7 @@ local function clearStink(pillowId)
       core.sound.stopSound3d('flies', s.pillow)
     end
   end)
-  for _, key in ipairs({ 'flies', 'light' }) do
+  for _, key in ipairs({ 'flies', 'cloud', 'light' }) do
     pcall(function()
       if s[key] and s[key]:isValid() then s[key]:remove() end
     end)
@@ -48,10 +49,10 @@ local function ensureStink(pillow)
   end)
   if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
   ok, err = pcall(function()
-    s.light = world.createObject(shared.LIGHT_RECORD, 1)
-    s.light:teleport(pillow.cell, pillow.position)
+    s.cloud = world.createObject(shared.CLOUD_RECORD, 1)
+    s.cloud:teleport(pillow.cell, pillow.position)
   end)
-  if not ok then print('LPH global: light spawn failed: ' .. tostring(err)) end
+  if not ok then print('LPH global: stink cloud spawn failed: ' .. tostring(err)) end
   -- Vanilla Flies sound record, same volume the vanilla emitter script uses
   ok, err = pcall(function()
     core.sound.playSound3d('flies', pillow, { loop = true, volume = 0.5 })
@@ -61,7 +62,7 @@ end
 
 local function isTrackedEffect(object)
   for _, s in pairs(stink) do
-    if s.flies == object or s.light == object then return true end
+    if s.flies == object or s.cloud == object or s.light == object then return true end
   end
   return false
 end
@@ -152,7 +153,8 @@ local function onObjectActive(object)
   -- Orphan sweep: fly swarms we spawned but lost track of (older bug left
   -- some leaked in saves). Only OUR activator record — never touch vanilla
   -- objects, and never a swarm that's currently tracked.
-  if object.recordId == shared.FLIES_RECORD and not isTrackedEffect(object) then
+  if (object.recordId == shared.FLIES_RECORD or object.recordId == shared.CLOUD_RECORD)
+      and not isTrackedEffect(object) then
     pcall(function() object:remove() end)
   end
 end
@@ -186,9 +188,9 @@ return {
         pcall(function()
           for id, s in pairs(saved) do
             if s.pillow and s.pillow:isValid() and s.pillow.cell ~= nil then
-              stink[id] = { flies = s.flies, light = s.light, pillow = s.pillow }
+              stink[id] = { flies = s.flies, cloud = s.cloud, light = s.light, pillow = s.pillow }
             else
-              for _, key in ipairs({ 'flies', 'light' }) do
+              for _, key in ipairs({ 'flies', 'cloud', 'light' }) do
                 pcall(function() if s[key] and s[key]:isValid() then s[key]:remove() end end)
               end
             end
@@ -230,7 +232,7 @@ return {
       if s then
         pcall(function()
           if s.flies and s.flies:isValid() then s.flies:teleport(pillow.cell, pillow.position) end
-          if s.light and s.light:isValid() then s.light:teleport(pillow.cell, pillow.position) end
+          if s.cloud and s.cloud:isValid() then s.cloud:teleport(pillow.cell, pillow.position) end
         end)
       end
       local player = world.players[1]
