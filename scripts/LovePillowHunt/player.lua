@@ -309,17 +309,20 @@ local function openMenu(data)
     spacer(8),
     textButton('Cancel', function() closeMenu() end),
   }
-  -- Size the box to its content plus a little padding (no measure API for
-  -- Flex content — estimate from string lengths, same idiom the highlight
-  -- mod uses for label widths).
+  -- Size the box to its content plus an EQUAL gap on all four sides (the
+  -- Flex centers content, so box = content + 2*PAD keeps the margins even).
+  -- 28 logical px ~= 1cm on AJ's 3440x1440 at engine GUI scale 1.5.
+  -- No measure API for Flex content — estimate from string lengths, same
+  -- idiom the highlight mod uses for label widths.
+  local PAD = 28
   local widest = #title * 9
   for _, label in ipairs({ 'Cuddle', 'Pick Up', 'Flip Over', 'Cancel' }) do
     widest = math.max(widest, #label * 8)
   end
-  local boxW = math.max(180, widest + 24)
-  -- clean line 18 + gap + title 26 + gap 14 + 4 buttons at 24 + 3 gaps at 8
-  -- + vertical padding
-  local boxH = 18 + 2 + 26 + 14 + 4 * 24 + 3 * 8 + 28
+  local boxW = widest + 2 * PAD
+  -- content: clean 18 + gap 2 + title 26 + gap 14 + 4 buttons at 24 + 3 gaps at 8
+  local contentH = 18 + 2 + 26 + 14 + 4 * 24 + 3 * 8
+  local boxH = contentH + 2 * PAD
   suppressModeEvent = true
   menu = ui.create {
     layer = 'Windows',
