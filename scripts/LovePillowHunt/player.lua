@@ -111,7 +111,15 @@ local fadeEl = nil
 local fade = nil -- { t, atBlack, atEnd, ranAtBlack }
 
 local function setControls(allowed)
-  types.Player.setControlSwitch(self.object, types.Player.CONTROL_SWITCH.Controls, allowed)
+  -- Pass `self`, NOT self.object: like say(), the engine validates the
+  -- caller's identity via the openmw.self userdata ("Only player and global
+  -- scripts can toggle control switches" when handed the plain GameObject).
+  -- pcall so a future engine quirk degrades to an unlocked fade, not a
+  -- wedged one.
+  local ok, err = pcall(function()
+    types.Player.setControlSwitch(self, types.Player.CONTROL_SWITCH.Controls, allowed)
+  end)
+  if not ok then print('LPH: setControlSwitch failed: ' .. tostring(err)) end
 end
 
 local function setFadeAlpha(a)
@@ -155,11 +163,13 @@ local function updateFade(dt)
   elseif t < FADE_OUT + FADE_HOLD + FADE_IN then
     setFadeAlpha(1 - (t - FADE_OUT - FADE_HOLD) / FADE_IN)
   else
-    setFadeAlpha(0)
-    if fadeEl then fadeEl:destroy(); fadeEl = nil end
-    setControls(true)
+    -- Clear the state FIRST: if any teardown call throws, the fade must not
+    -- stay wedged (a stuck non-nil `fade` silently blocks every later
+    -- cuddle — that was the round-4 "can't cuddle again" bug).
     local atEnd = fade.atEnd
     fade = nil
+    if fadeEl then fadeEl:destroy(); fadeEl = nil end
+    setControls(true)
     if atEnd then atEnd() end
   end
 end
@@ -177,7 +187,10 @@ local function playVoiceLine()
   -- Must pass `self` (not self.object): local-script sound functions verify
   -- the argument IS the attached script's self, or throw "Local scripts can
   -- only modify object they are attached to".
-  local ok, err = pcall(function() core.sound.say(line.path, self, line.text) end)
+  -- Voice mp3s are loose files under Data Files\Sound\Vo\ — the VFS path
+  -- therefore needs the sound/ prefix (vocals.lua keeps the original's
+  -- Sound-relative paths as data).
+  local ok, err = pcall(function() core.sound.say('sound/' .. line.path, self, line.text) end)
   if not ok then print('LPH: say failed: ' .. tostring(err)) end
 end
 
