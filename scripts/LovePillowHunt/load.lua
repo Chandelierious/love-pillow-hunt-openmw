@@ -23,7 +23,45 @@ end
 local function onContentFilesLoaded()
   local made, failed = 0, 0
   local sampleLogged = false
-  for _, name in ipairs(shared.NAMES) do
+
+  -- Custom pillows first: base misc record (donor fields + our mesh) and
+  -- the buff spell (constant ability, mirrors the ESP pillow spells).
+  for _, c in ipairs(shared.CUSTOM) do
+    local donor = content.miscs.records['lovepillow_' .. c.donor]
+    if donor then
+      attempt('custom pillow ' .. c.key, function()
+        content.miscs.records['lovepillow_' .. c.key] = {
+          name = c.name,
+          model = string.format('meshes\\lp\\lovepillow_%s.nif', c.key),
+          icon = donor.icon,
+          weight = donor.weight,
+          value = donor.value,
+        }
+      end)
+      attempt('custom spell ' .. c.spell, function()
+        content.spells.records[c.spell] = {
+          name = c.name,
+          type = content.spells.TYPE.Ability,
+          cost = 0,
+          effects = { {
+            id = c.effect.id,
+            affectedAttribute = c.effect.attribute,
+            duration = 0,
+            magnitudeMin = c.effect.magnitude,
+            magnitudeMax = c.effect.magnitude,
+          } },
+        }
+      end)
+    else
+      print('LPH load: donor missing for custom pillow ' .. c.key)
+    end
+  end
+
+  local allNames = {}
+  for _, name in ipairs(shared.NAMES) do allNames[#allNames + 1] = name end
+  for _, c in ipairs(shared.CUSTOM) do allNames[#allNames + 1] = c.key end
+
+  for _, name in ipairs(allNames) do
     local base = content.miscs.records['lovepillow_' .. name]
     if not base then
       print('LPH load: base record missing: lovepillow_' .. name)

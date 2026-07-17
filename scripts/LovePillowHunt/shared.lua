@@ -53,17 +53,39 @@ function shared.seedCleanliness(stage)
   return shared.MAX_CLEAN
 end
 
+-- Custom pillows: not in the ESP; base record + spell + stage records are
+-- all created by load.lua. donor = ESP pillow whose record fields (weight,
+-- icon) seed the base; the mesh/texture come from tools/make_custom_pillow.py
+-- (donor name must be the same LENGTH for the NIF byte patch).
+-- PERSONAL USE: custom art textures are gitignored (real-person likeness /
+-- SKZOO IP — do not publish).
+shared.CUSTOM = {
+  {
+    key = 'bangchan',
+    name = 'Bang Chan Body Pillow',
+    donor = 'galbedir',
+    spell = 'lovepillow_sp_bangchan',
+    -- Leader-of-the-pack charisma.
+    effect = { id = 'fortifyattribute', attribute = 'personality', magnitude = 10 },
+  },
+}
+
 -- record id -> { spell, base, stage } for base records AND stage variants
--- (spell ids confirmed against Love_Pillow_Hunt.esp)
+-- (ESP-backed pillows confirmed against Love_Pillow_Hunt.esp, plus customs)
 shared.pillows = {}
-for _, name in ipairs(shared.NAMES) do
+local function registerPillow(name, spell)
   local base = 'lovepillow_' .. name
-  local spell = 'lovepillow_sp_' .. name
   shared.pillows[base] = { id = base, spell = spell, base = base, stage = 0 }
   for stage = 1, 3 do
     local sid = shared.stageRecordId(base, stage)
     shared.pillows[sid] = { id = sid, spell = spell, base = base, stage = stage }
   end
+end
+for _, name in ipairs(shared.NAMES) do
+  registerPillow(name, 'lovepillow_sp_' .. name)
+end
+for _, c in ipairs(shared.CUSTOM) do
+  registerPillow(c.key, c.spell)
 end
 
 -- Stink effect records, both created by load.lua as nameless activators:
