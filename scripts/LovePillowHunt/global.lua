@@ -50,6 +50,7 @@ local function ensureStink(pillow)
   if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
   ok, err = pcall(function()
     s.cloud = world.createObject(shared.CLOUD_RECORD, 1)
+    s.cloud:setScale(0.6)
     s.cloud:teleport(pillow.cell, pillow.position)
   end)
   if not ok then print('LPH global: stink cloud spawn failed: ' .. tostring(err)) end
