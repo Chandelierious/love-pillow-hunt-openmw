@@ -53,19 +53,26 @@ local function ensureStink(pillow)
     s.flies:teleport(pillow.cell, pillow.position)
   end)
   if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
-  -- Four dark clouds, sporadic spread and varied sizes ("wider, different
-  -- sizes, spread out sporadically so it looks more natural" — round-14).
+  -- Four dark clouds rising FROM the pillow fabric (round-16: "all the
+  -- emitters need to come out of the pillow"): placed along the pillow's
+  -- long axis (local Y via yaw) with slight jitter, varied sizes.
+  local axisX, axisY = 0, 1
+  pcall(function()
+    local yaw = pillow.rotation:getYaw()
+    axisX, axisY = math.sin(yaw), math.cos(yaw)
+  end)
   s.clouds = {}
+  local along = { -55, -18, 20, 58 }
   for ci = 1, 4 do
     ok, err = pcall(function()
-      local angle = math.random() * 2 * math.pi
-      local dist = 10 + math.random() * 30
+      local d = along[ci] + (math.random() * 14 - 7)
+      local side = math.random() * 12 - 6
       local c = world.createObject(shared.CLOUD_RECORD, 1)
       c:setScale(0.08 + math.random() * 0.10)
       c:teleport(pillow.cell, util.vector3(
-        pillow.position.x + math.cos(angle) * dist,
-        pillow.position.y + math.sin(angle) * dist,
-        pillow.position.z))
+        pillow.position.x + axisX * d - axisY * side,
+        pillow.position.y + axisY * d + axisX * side,
+        pillow.position.z + 6))
       s.clouds[ci] = c
     end)
     if not ok then print('LPH global: stink cloud spawn failed: ' .. tostring(err)) end
