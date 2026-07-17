@@ -50,6 +50,14 @@ I.Settings.registerGroup {
       description = 'How long (in game time) the buff gained from making out with a pillow lasts.',
       default = shared.DEFAULT_BUFF_HOURS,
     },
+    {
+      key = 'menuOpacity',
+      renderer = 'number',
+      argument = { integer = true, min = 10, max = 100 },
+      name = 'Menu background opacity (%)',
+      description = 'Opacity of the black box behind the pillow menu.',
+      default = 60,
+    },
   },
 }
 
@@ -62,6 +70,11 @@ end
 local function getBuffHours()
   -- Type-guard: persisted values can come back with unexpected types.
   return tonumber(settings:get('buffDuration')) or shared.DEFAULT_BUFF_HOURS
+end
+
+local function getMenuOpacity()
+  local pct = tonumber(settings:get('menuOpacity')) or 60
+  return math.max(0.1, math.min(pct / 100, 1))
 end
 
 local function syncEnabled()
@@ -261,11 +274,12 @@ end
 
 local function openMenu(data)
   closeMenu()
+  local title = string.format('%s (%d%% clean)', data.name, tonumber(data.cleanliness) or shared.MAX_CLEAN)
   local rows = {
     {
       type = ui.TYPE.Text,
       props = {
-        text = string.format('%s (%d%% clean)', data.name, tonumber(data.cleanliness) or shared.MAX_CLEAN),
+        text = title,
         textSize = 20,
         textColor = col(0.92, 0.90, 0.83),
       },
@@ -285,6 +299,16 @@ local function openMenu(data)
     spacer(8),
     textButton('Cancel', function() closeMenu() end),
   }
+  -- Size the box to its content plus a little padding (no measure API for
+  -- Flex content — estimate from string lengths, same idiom the highlight
+  -- mod uses for label widths).
+  local widest = #title * 9
+  for _, label in ipairs({ 'Cuddle', 'Pick Up', 'Flip Over', 'Cancel' }) do
+    widest = math.max(widest, #label * 8)
+  end
+  local boxW = math.max(220, widest + 32)
+  -- title 26 + gap 14 + 4 buttons at 24 + 3 gaps at 8 + vertical padding
+  local boxH = 26 + 14 + 4 * 24 + 3 * 8 + 28
   suppressModeEvent = true
   menu = ui.create {
     layer = 'Windows',
@@ -292,9 +316,9 @@ local function openMenu(data)
     type = ui.TYPE.Image,
     props = {
       resource = ui.texture { path = 'white' },
-      color = col(0.08, 0.09, 0.11),
-      alpha = 0.9,
-      size = V2(380, 260),
+      color = col(0, 0, 0),
+      alpha = getMenuOpacity(),
+      size = V2(boxW, boxH),
       relativePosition = V2(0.5, 0.5),
       anchor = V2(0.5, 0.5),
     },
@@ -305,6 +329,9 @@ local function openMenu(data)
           horizontal = false,
           arrange = ui.ALIGNMENT.Center,
           relativeSize = V2(1, 1),
+          -- Text must stay fully opaque while the box behind it is
+          -- translucent; children inherit parent alpha by default.
+          inheritAlpha = false,
         },
         content = ui.content(rows),
       },
