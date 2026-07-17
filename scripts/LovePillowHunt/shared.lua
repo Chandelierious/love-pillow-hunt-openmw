@@ -18,16 +18,17 @@ shared.NAMES = {
   'habasi', 'jiub', 'maiq', 'mehramilo', 'tarhiel', 'vivec',
 }
 
--- Visible dirt stages: 0 = clean, 1 = speckled (<= 85, appears early),
--- 2 = dirty (<= 55), 3 = filthy (<= 30, dark overlapping pools + stink).
--- Stages use load-context record variants with restained models.
+-- Visible dirt states, tuned to cuddle counts (each cuddle removes 10-20):
+-- cuddle 1 stays clean, cuddle 2 speckles (<= 79), cuddle 3 usually jumps
+-- straight to filthy (<= 59: dark overlapping pools + stink). The middle
+-- "dirty" stage 2 is DORMANT in progression (records still exist so items
+-- from older saves resolve; a stage check heals them to the current map).
 shared.STINK_STAGE = 3
 
 function shared.stageFor(cleanliness)
   local c = tonumber(cleanliness) or shared.MAX_CLEAN
-  if c <= 30 then return 3 end
-  if c <= 55 then return 2 end
-  if c <= 85 then return 1 end
+  if c <= 59 then return 3 end
+  if c <= 79 then return 1 end
   return 0
 end
 

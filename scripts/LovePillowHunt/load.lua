@@ -72,11 +72,11 @@ local function onContentFilesLoaded()
   attempt('stink cloud activator', function()
     content.activators.records[shared.CLOUD_RECORD] = {
       name = '',
-      -- slowed copy of the vanilla green chimney wisp (particle timing is
-      -- baked into the NIF; tools/make_slow_smoke.py patches rise speed,
-      -- lifetime, and fade). The plain smoke_green column was "a little
-      -- much" (round-8), and the vanilla wisp rose too fast (round-9).
-      model = 'meshes\\lph\\stinkcloud.nif',
+      -- Back to the vanilla big column — the ONLY smoke confirmed visible
+      -- in-game (round-8). The chimney wisp (and patched copies of it)
+      -- never rendered; likely its emitter is offset for chimney stacks
+      -- and spawns particles under the floor. Size handled via setScale.
+      model = 'meshes\\smoke_green.nif',
     }
   end)
 
