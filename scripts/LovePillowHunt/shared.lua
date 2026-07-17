@@ -25,4 +25,12 @@ for _, name in ipairs({
   }
 end
 
+-- Display-name transform: ESP records are named "Body Pillow of X"; AJ's
+-- preferred scheme is "X Body Pillow". Names that don't match pass through.
+function shared.displayName(name)
+  local who = tostring(name or ''):match('^Body Pillow of (.+)$')
+  if who then return who .. ' Body Pillow' end
+  return tostring(name or '?')
+end
+
 return shared

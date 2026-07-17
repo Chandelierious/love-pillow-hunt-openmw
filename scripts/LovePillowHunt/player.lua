@@ -234,7 +234,7 @@ end
 local function onCuddle(data)
   closeMenu()
   if (tonumber(data.cleanliness) or 0) <= 0 then
-    ui.showMessage(string.format('%s is too filthy!', data.name))
+    ui.showMessage(string.format('%s is too filthy!', shared.displayName(data.name)))
     return
   end
   local def = shared.pillows[data.pillow.recordId]
@@ -274,8 +274,18 @@ end
 
 local function openMenu(data)
   closeMenu()
-  local title = string.format('%s (%d%% clean)', data.name, tonumber(data.cleanliness) or shared.MAX_CLEAN)
+  local title = shared.displayName(data.name)
+  local cleanLine = string.format('%d%% clean', tonumber(data.cleanliness) or shared.MAX_CLEAN)
   local rows = {
+    {
+      type = ui.TYPE.Text,
+      props = {
+        text = cleanLine,
+        textSize = 14,
+        textColor = col(0.72, 0.70, 0.62),
+      },
+    },
+    spacer(2),
     {
       type = ui.TYPE.Text,
       props = {
@@ -306,9 +316,10 @@ local function openMenu(data)
   for _, label in ipairs({ 'Cuddle', 'Pick Up', 'Flip Over', 'Cancel' }) do
     widest = math.max(widest, #label * 8)
   end
-  local boxW = math.max(220, widest + 32)
-  -- title 26 + gap 14 + 4 buttons at 24 + 3 gaps at 8 + vertical padding
-  local boxH = 26 + 14 + 4 * 24 + 3 * 8 + 28
+  local boxW = math.max(180, widest + 24)
+  -- clean line 18 + gap + title 26 + gap 14 + 4 buttons at 24 + 3 gaps at 8
+  -- + vertical padding
+  local boxH = 18 + 2 + 26 + 14 + 4 * 24 + 3 * 8 + 28
   suppressModeEvent = true
   menu = ui.create {
     layer = 'Windows',

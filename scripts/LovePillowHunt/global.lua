@@ -104,7 +104,7 @@ return {
       if not player then return end
       world.advanceTime(shared.CLEAN_HOURS)
       player:sendEvent('LPH_Fade', {
-        text = string.format('You clean the filth from %s', pillowName(pillow)),
+        text = string.format('You clean the filth from %s', shared.displayName(pillowName(pillow))),
       })
       pickUp(pillow, player)
     end,
