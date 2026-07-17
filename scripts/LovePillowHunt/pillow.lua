@@ -10,6 +10,12 @@ local shared = require('scripts.LovePillowHunt.shared')
 
 local cleanliness = shared.MAX_CLEAN
 
+-- Tell the global script to re-evaluate this pillow's dirt stage / stink
+-- effects. Called after anything that changes (or establishes) cleanliness.
+local function stageCheck()
+  core.sendGlobalEvent('LPH_StageCheck', { pillow = self.object, cleanliness = cleanliness })
+end
+
 -- Wash sequence state: staggered splash sounds driven from onUpdate so no
 -- timer API is needed. nil when idle.
 local wash = nil
@@ -39,7 +45,7 @@ local function onUpdate(dt)
       playSplash('swim right')
     elseif wash.stage == 3 and wash.t >= 1.8 then
       wash = nil
-      core.sendGlobalEvent('LPH_Washed', { pillow = self.object })
+      core.sendGlobalEvent('LPH_Washed', { pillow = self.object, cleanliness = cleanliness })
     end
     return
   end
@@ -60,6 +66,19 @@ end
 return {
   engineHandlers = {
     onUpdate = onUpdate,
+    -- initData carries cleanliness across stage-swaps. Without it (fresh
+    -- attach, e.g. a stage-variant item dropped from inventory), infer a
+    -- plausible value from the record's own stage so looks and state agree.
+    onInit = function(initData)
+      local carried = tonumber(initData and initData.cleanliness)
+      if carried then
+        cleanliness = carried
+      else
+        local def = shared.pillows[self.object.recordId]
+        cleanliness = shared.seedCleanliness(def and def.stage or 0)
+      end
+    end,
+    onActive = stageCheck,
     onSave = function()
       return { version = 1, cleanliness = cleanliness }
     end,
@@ -79,6 +98,7 @@ return {
     end,
     LPH_Dirty = function()
       cleanliness = math.max(0, cleanliness - math.random(shared.DIRTY_MIN, shared.DIRTY_MAX))
+      stageCheck()
     end,
   },
 }

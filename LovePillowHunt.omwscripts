@@ -1,3 +1,4 @@
+LOAD: scripts/LovePillowHunt/load.lua
 GLOBAL: scripts/LovePillowHunt/global.lua
 PLAYER: scripts/LovePillowHunt/player.lua
 CUSTOM: scripts/LovePillowHunt/pillow.lua

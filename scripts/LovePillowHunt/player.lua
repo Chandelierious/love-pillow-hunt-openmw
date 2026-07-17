@@ -58,6 +58,20 @@ I.Settings.registerGroup {
       description = 'Opacity of the black box behind the pillow menu.',
       default = 60,
     },
+    {
+      key = 'visibleDirt',
+      renderer = 'checkbox',
+      name = 'Visible dirt stages',
+      description = 'World pillows get visibly stained as their cleanliness drops.',
+      default = true,
+    },
+    {
+      key = 'stinkEffects',
+      renderer = 'checkbox',
+      name = 'Stink effects',
+      description = 'The filthiest pillows attract buzzing flies and glow a faint sickly green. Fly swarm mesh by R-Zero.',
+      default = true,
+    },
   },
 }
 
@@ -78,7 +92,11 @@ local function getMenuOpacity()
 end
 
 local function syncEnabled()
-  core.sendGlobalEvent('LPH_SetEnabled', { enabled = getEnabled() })
+  core.sendGlobalEvent('LPH_SetEnabled', {
+    enabled = getEnabled(),
+    visibleDirt = settings:get('visibleDirt') ~= false,
+    stinkEffects = settings:get('stinkEffects') ~= false,
+  })
 end
 
 settings:subscribe(async:callback(syncEnabled))
