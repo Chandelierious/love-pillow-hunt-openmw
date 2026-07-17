@@ -4,8 +4,12 @@
 local shared = {}
 
 shared.MAX_CLEAN = 100
-shared.DIRTY_MIN = 10
-shared.DIRTY_MAX = 20
+-- Fixed dirt per cuddle (was random 10-20 like the MWSE original): the
+-- visible-stage progression must be deterministic — clean, speckle on the
+-- 2nd cuddle, filthy on the 3rd — and random rolls kept undershooting the
+-- thresholds (rounds 11-12 feedback).
+shared.DIRTY_MIN = 15
+shared.DIRTY_MAX = 15
 shared.DIRTY_HOURS = 0.5   -- game hours passed per cuddle
 shared.CLEAN_HOURS = 0.15  -- game hours passed per wash
 shared.DEFAULT_BUFF_HOURS = 2

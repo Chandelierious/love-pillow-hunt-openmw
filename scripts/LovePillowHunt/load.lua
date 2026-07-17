@@ -72,11 +72,10 @@ local function onContentFilesLoaded()
   attempt('stink cloud activator', function()
     content.activators.records[shared.CLOUD_RECORD] = {
       name = '',
-      -- Back to the vanilla big column — the ONLY smoke confirmed visible
-      -- in-game (round-8). The chimney wisp (and patched copies of it)
-      -- never rendered; likely its emitter is offset for chimney stacks
-      -- and spawns particles under the floor. Size handled via setScale.
-      model = 'meshes\\smoke_green.nif',
+      -- Quarter-opacity copy of the vanilla column (the only smoke that
+      -- renders in-game; full-alpha particles read as a glowing core —
+      -- tools/make_slow_smoke.py). Spawned as THREE small offset clouds.
+      model = 'meshes\\lph\\stinkcloud.nif',
     }
   end)
 

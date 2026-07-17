@@ -34,6 +34,11 @@ local function clearStink(pillowId)
       if s[key] and s[key]:isValid() then s[key]:remove() end
     end)
   end
+  if s.clouds then
+    for _, c in ipairs(s.clouds) do
+      pcall(function() if c and c:isValid() then c:remove() end end)
+    end
+  end
 end
 
 local function ensureStink(pillow)
@@ -48,12 +53,22 @@ local function ensureStink(pillow)
     s.flies:teleport(pillow.cell, pillow.position)
   end)
   if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
-  ok, err = pcall(function()
-    s.cloud = world.createObject(shared.CLOUD_RECORD, 1)
-    s.cloud:setScale(0.35)
-    s.cloud:teleport(pillow.cell, pillow.position)
-  end)
-  if not ok then print('LPH global: stink cloud spawn failed: ' .. tostring(err)) end
+  -- Three small quarter-opacity clouds spread around the pillow ("3 or 4
+  -- clouds a quarter of that size and opacity" — round-12 direction).
+  s.clouds = {}
+  local offsets = {
+    { x = 22, y = 4 }, { x = -16, y = 18 }, { x = -6, y = -22 },
+  }
+  for ci, off in ipairs(offsets) do
+    ok, err = pcall(function()
+      local c = world.createObject(shared.CLOUD_RECORD, 1)
+      c:setScale(0.09)
+      c:teleport(pillow.cell, util.vector3(
+        pillow.position.x + off.x, pillow.position.y + off.y, pillow.position.z))
+      s.clouds[ci] = c
+    end)
+    if not ok then print('LPH global: stink cloud spawn failed: ' .. tostring(err)) end
+  end
   -- Vanilla Flies sound record, same volume the vanilla emitter script uses
   ok, err = pcall(function()
     core.sound.playSound3d('flies', pillow, { loop = true, volume = 0.5 })
@@ -64,6 +79,11 @@ end
 local function isTrackedEffect(object)
   for _, s in pairs(stink) do
     if s.flies == object or s.cloud == object or s.light == object then return true end
+    if s.clouds then
+      for _, c in ipairs(s.clouds) do
+        if c == object then return true end
+      end
+    end
   end
   return false
 end
@@ -189,10 +209,16 @@ return {
         pcall(function()
           for id, s in pairs(saved) do
             if s.pillow and s.pillow:isValid() and s.pillow.cell ~= nil then
-              stink[id] = { flies = s.flies, cloud = s.cloud, light = s.light, pillow = s.pillow }
+              stink[id] = { flies = s.flies, cloud = s.cloud, light = s.light,
+                            clouds = s.clouds, pillow = s.pillow }
             else
               for _, key in ipairs({ 'flies', 'cloud', 'light' }) do
                 pcall(function() if s[key] and s[key]:isValid() then s[key]:remove() end end)
+              end
+              if s.clouds then
+                for _, c in ipairs(s.clouds) do
+                  pcall(function() if c and c:isValid() then c:remove() end end)
+                end
               end
             end
           end
@@ -233,7 +259,11 @@ return {
       if s then
         pcall(function()
           if s.flies and s.flies:isValid() then s.flies:teleport(pillow.cell, pillow.position) end
-          if s.cloud and s.cloud:isValid() then s.cloud:teleport(pillow.cell, pillow.position) end
+          if s.clouds then
+            for _, c in ipairs(s.clouds) do
+              if c and c:isValid() then c:teleport(pillow.cell, pillow.position) end
+            end
+          end
         end)
       end
       local player = world.players[1]
