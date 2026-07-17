@@ -75,6 +75,12 @@ local function applyStage(pillow, cleanliness)
   local targetStage = visibleDirt and stage or 0
   local targetId = shared.stageRecordId(def.base, targetStage)
 
+  -- Diagnostic (round-6): swaps silently didn't happen in-game; log every
+  -- decision input until the culprit is identified.
+  print(string.format('LPH stage: obj=%s rec=%s clean=%s stage=%d visibleDirt=%s target=%s cell=%s',
+    tostring(pillow.id), tostring(pillow.recordId), tostring(cleanliness), stage,
+    tostring(visibleDirt), targetId, tostring(pillow.cell ~= nil)))
+
   if pillow.recordId ~= targetId and pillow.cell ~= nil then
     local ok, err = pcall(function()
       clearStink(pillow.id)
@@ -86,7 +92,11 @@ local function applyStage(pillow, cleanliness)
       pillow:remove()
       pillow = fresh
     end)
-    if not ok then print('LPH global: stage swap failed: ' .. tostring(err)) end
+    if not ok then
+      print('LPH global: stage swap failed: ' .. tostring(err))
+    else
+      print(string.format('LPH stage: swapped to %s as obj=%s', targetId, tostring(pillow.id)))
+    end
   end
 
   if stage == 2 and stinkEffects and pillow.cell ~= nil then
@@ -192,6 +202,8 @@ return {
       enabled = not (data and data.enabled == false)
       visibleDirt = not (data and data.visibleDirt == false)
       stinkEffects = not (data and data.stinkEffects == false)
+      print(string.format('LPH settings: enabled=%s visibleDirt=%s stinkEffects=%s',
+        tostring(enabled), tostring(visibleDirt), tostring(stinkEffects)))
       if not stinkEffects then
         for id in pairs(stink) do clearStink(id) end
       end
