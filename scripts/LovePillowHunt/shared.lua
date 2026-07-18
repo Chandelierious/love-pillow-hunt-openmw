@@ -64,6 +64,7 @@ shared.CUSTOM = {
     key = 'bangchan',
     name = 'Bang Chan Body Pillow',
     donor = 'galbedir',
+    icon = 'icons\\lp\\lvpillow_bangchan.tga',
     spell = 'lovepillow_sp_bangchan',
     -- Leader-of-the-pack charisma.
     effect = { id = 'fortifyattribute', attribute = 'personality', magnitude = 10 },

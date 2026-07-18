@@ -33,7 +33,7 @@ local function onContentFilesLoaded()
         content.miscs.records['lovepillow_' .. c.key] = {
           name = c.name,
           model = string.format('meshes\\lp\\lovepillow_%s.nif', c.key),
-          icon = donor.icon,
+          icon = c.icon or donor.icon,
           weight = donor.weight,
           value = donor.value,
         }

@@ -56,7 +56,7 @@ I.Settings.registerGroup {
       argument = { integer = true, min = 10, max = 100 },
       name = 'Menu background opacity (%)',
       description = 'Opacity of the black box behind the pillow menu.',
-      default = 80,
+      default = 90,
     },
     {
       key = 'visibleDirt',
@@ -87,7 +87,7 @@ local function getBuffHours()
 end
 
 local function getMenuOpacity()
-  local pct = tonumber(settings:get('menuOpacity')) or 80
+  local pct = tonumber(settings:get('menuOpacity')) or 90
   return math.max(0.1, math.min(pct / 100, 1))
 end
 
@@ -333,19 +333,18 @@ local function openMenu(data)
     spacer(8),
     textButton('Cancel', function() closeMenu() end),
   }
-  -- Size the box to its content plus an EQUAL gap on all four sides (the
-  -- Flex centers content, so box = content + 2*PAD keeps the margins even).
-  -- 28 logical px ~= 1cm on AJ's 3440x1440 at engine GUI scale 1.5.
-  -- No measure API for Flex content — estimate from string lengths, same
-  -- idiom the highlight mod uses for label widths.
-  local PAD = 28
-  local widest = #title * 9
+  -- Box hugs content per AJ's round-21 markup: tighter estimates for the
+  -- narrow PT Sans + smaller equal padding. The Flex self-centers (below),
+  -- so estimate drift shows as slightly uneven margins, never as content
+  -- pinned to a corner.
+  local PAD = 16
+  local widest = #title * 8
   for _, label in ipairs({ 'Cuddle', 'Pick Up', 'Flip Over', 'Cancel' }) do
-    widest = math.max(widest, #label * 8)
+    widest = math.max(widest, #label * 7)
   end
   local boxW = widest + 2 * PAD
-  -- content: clean 18 + gap 2 + title 26 + gap 14 + 4 buttons at 24 + 3 gaps at 8
-  local contentH = 18 + 2 + 26 + 14 + 4 * 24 + 3 * 8
+  -- content: clean 14 + gap 2 + title 22 + gap 12 + 4 buttons at 20 + 3 gaps at 8
+  local contentH = 14 + 2 + 22 + 12 + 4 * 20 + 3 * 8
   local boxH = contentH + 2 * PAD
   suppressModeEvent = true
   -- WoW-frame styling (round-19): near-black charcoal fill, mostly opaque,
@@ -382,7 +381,11 @@ local function openMenu(data)
             props = {
               horizontal = false,
               arrange = ui.ALIGNMENT.Center,
-              relativeSize = V2(1, 1),
+              -- auto-size to content and SELF-CENTER in the box: with
+              -- relativeSize the flex filled the box and stacked content
+              -- at the top, leaving lopsided dead space (round-21).
+              relativePosition = V2(0.5, 0.5),
+              anchor = V2(0.5, 0.5),
               -- Text stays fully opaque over the translucent fill.
               inheritAlpha = false,
             },
