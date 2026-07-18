@@ -61,17 +61,32 @@ local function ensureStink(pillow)
     local yaw = pillow.rotation:getYaw()
     axisX, axisY = math.sin(yaw), math.cos(yaw)
   end)
+  -- Round-17: no uniform pattern — a loose CLUSTER (2-3 clouds bunched at a
+  -- random spot along the pillow) plus stragglers anywhere, and a forced
+  -- size SPREAD (tiny through big, shuffled) instead of similar sizes.
   s.clouds = {}
-  local along = { -55, -18, 20, 58 }
+  local positions = {}
+  local center = math.random() * 80 - 40
+  local clustered = 2 + math.random(0, 1)
+  for _ = 1, clustered do
+    positions[#positions + 1] = center + math.random() * 24 - 12
+  end
+  while #positions < 4 do
+    positions[#positions + 1] = math.random() * 120 - 60
+  end
+  local sizes = { 0.055, 0.09, 0.135, 0.19 }
+  for i = #sizes, 2, -1 do
+    local j = math.random(i)
+    sizes[i], sizes[j] = sizes[j], sizes[i]
+  end
   for ci = 1, 4 do
     ok, err = pcall(function()
-      local d = along[ci] + (math.random() * 14 - 7)
-      local side = math.random() * 12 - 6
+      local side = math.random() * 16 - 8
       local c = world.createObject(shared.CLOUD_RECORD, 1)
-      c:setScale(0.08 + math.random() * 0.10)
+      c:setScale(sizes[ci] * (0.85 + math.random() * 0.3))
       c:teleport(pillow.cell, util.vector3(
-        pillow.position.x + axisX * d - axisY * side,
-        pillow.position.y + axisY * d + axisX * side,
+        pillow.position.x + axisX * positions[ci] - axisY * side,
+        pillow.position.y + axisY * positions[ci] + axisX * side,
         pillow.position.z + 6))
       s.clouds[ci] = c
     end)
