@@ -55,8 +55,8 @@ I.Settings.registerGroup {
       renderer = 'number',
       argument = { integer = true, min = 10, max = 100 },
       name = 'Menu background opacity (%)',
-      description = 'Opacity of the dark box behind the pillow menu.',
-      default = 90,
+      description = 'Opacity of the black box behind the pillow menu.',
+      default = 80,
     },
     {
       key = 'visibleDirt',
@@ -87,7 +87,7 @@ local function getBuffHours()
 end
 
 local function getMenuOpacity()
-  local pct = tonumber(settings:get('menuOpacity')) or 90
+  local pct = tonumber(settings:get('menuOpacity')) or 80
   return math.max(0.1, math.min(pct / 100, 1))
 end
 
@@ -363,7 +363,7 @@ local function openMenu(data)
         type = ui.TYPE.Image,
         props = {
           resource = ui.texture { path = 'white' },
-          color = col(0.05, 0.05, 0.06),
+          color = col(0, 0, 0),
           alpha = getMenuOpacity(),
           position = V2(OUTLINE, OUTLINE),
           size = V2(boxW, boxH),
