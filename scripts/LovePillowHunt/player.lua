@@ -55,8 +55,8 @@ I.Settings.registerGroup {
       renderer = 'number',
       argument = { integer = true, min = 10, max = 100 },
       name = 'Menu background opacity (%)',
-      description = 'Opacity of the black box behind the pillow menu.',
-      default = 60,
+      description = 'Opacity of the dark box behind the pillow menu.',
+      default = 90,
     },
     {
       key = 'visibleDirt',
@@ -87,7 +87,7 @@ local function getBuffHours()
 end
 
 local function getMenuOpacity()
-  local pct = tonumber(settings:get('menuOpacity')) or 60
+  local pct = tonumber(settings:get('menuOpacity')) or 90
   return math.max(0.1, math.min(pct / 100, 1))
 end
 
@@ -342,30 +342,47 @@ local function openMenu(data)
   local contentH = 18 + 2 + 26 + 14 + 4 * 24 + 3 * 8
   local boxH = contentH + 2 * PAD
   suppressModeEvent = true
+  -- WoW-frame styling (round-19): near-black charcoal fill, mostly opaque,
+  -- ringed by a thin PITCH BLACK outline that separates it from the scene.
+  -- Structure: outer black Image (the outline) -> inset fill Image -> Flex.
+  -- (Images, not Containers: empty/shape Containers render at 0x0, #7848.)
+  local OUTLINE = 2
   menu = ui.create {
     layer = 'Windows',
-    -- Image, not Container: empty/shape Containers render at 0x0 (#7848).
     type = ui.TYPE.Image,
     props = {
       resource = ui.texture { path = 'white' },
       color = col(0, 0, 0),
-      alpha = getMenuOpacity(),
-      size = V2(boxW, boxH),
+      alpha = 1.0,
+      size = V2(boxW + 2 * OUTLINE, boxH + 2 * OUTLINE),
       relativePosition = V2(0.5, 0.5),
       anchor = V2(0.5, 0.5),
     },
     content = ui.content {
       {
-        type = ui.TYPE.Flex,
+        type = ui.TYPE.Image,
         props = {
-          horizontal = false,
-          arrange = ui.ALIGNMENT.Center,
-          relativeSize = V2(1, 1),
-          -- Text must stay fully opaque while the box behind it is
-          -- translucent; children inherit parent alpha by default.
+          resource = ui.texture { path = 'white' },
+          color = col(0.05, 0.05, 0.06),
+          alpha = getMenuOpacity(),
+          position = V2(OUTLINE, OUTLINE),
+          size = V2(boxW, boxH),
+          -- the fill's translucency must not dim the outline or text
           inheritAlpha = false,
         },
-        content = ui.content(rows),
+        content = ui.content {
+          {
+            type = ui.TYPE.Flex,
+            props = {
+              horizontal = false,
+              arrange = ui.ALIGNMENT.Center,
+              relativeSize = V2(1, 1),
+              -- Text stays fully opaque over the translucent fill.
+              inheritAlpha = false,
+            },
+            content = ui.content(rows),
+          },
+        },
       },
     },
   }
