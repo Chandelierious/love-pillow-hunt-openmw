@@ -22,17 +22,19 @@ shared.NAMES = {
   'habasi', 'jiub', 'maiq', 'mehramilo', 'tarhiel', 'vivec',
 }
 
--- Visible dirt states, tuned to cuddle counts (each cuddle removes 10-20):
--- cuddle 1 stays clean, cuddle 2 speckles (<= 79), cuddle 3 usually jumps
--- straight to filthy (<= 59: dark overlapping pools + stink). The middle
--- "dirty" stage 2 is DORMANT in progression (records still exist so items
--- from older saves resolve; a stage check heals them to the current map).
-shared.STINK_STAGE = 3
+-- Visible dirt ladder (round-24, AJ's spec): 80% first splotches, 65%
+-- bigger splotches on top, 50% very greasy; the effects trail behind —
+-- flies+buzz at 35%, rot clouds at 20%. At 15 dirt per cuddle:
+-- 100 -> 85 clean -> 70 splotch -> 55 bigger -> 40 greasy -> 25 +flies
+-- -> 10 +clouds.
+shared.FLIES_AT = 35
+shared.CLOUDS_AT = 20
 
 function shared.stageFor(cleanliness)
   local c = tonumber(cleanliness) or shared.MAX_CLEAN
-  if c <= 59 then return 3 end
-  if c <= 79 then return 1 end
+  if c <= 50 then return 3 end
+  if c <= 65 then return 2 end
+  if c <= 80 then return 1 end
   return 0
 end
 
@@ -45,11 +47,12 @@ end
 shared.STAGE_TAGS = { [1] = 's', [2] = 'd', [3] = 'f' }
 
 -- A pillow object spawned without script state (e.g. dropped from inventory)
--- infers a plausible cleanliness from its own record's stage.
+-- infers a plausible cleanliness from its own record's stage. Seeds sit at
+-- each stage's top (no effects yet) so the map stays self-consistent.
 function shared.seedCleanliness(stage)
-  if stage == 3 then return 15 end
-  if stage == 2 then return 45 end
-  if stage == 1 then return 70 end
+  if stage == 3 then return 45 end
+  if stage == 2 then return 58 end
+  if stage == 1 then return 72 end
   return shared.MAX_CLEAN
 end
 

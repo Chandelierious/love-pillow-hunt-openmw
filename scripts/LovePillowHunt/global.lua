@@ -41,18 +41,31 @@ local function clearStink(pillowId)
   end
 end
 
-local function ensureStink(pillow)
-  if stink[pillow.id] then return end
-  -- Track FIRST, then attempt each piece independently: a failing piece must
-  -- never abort the others or leave spawned objects untracked (round-5: the
-  -- light record failing left untracked fly swarms leaked in the world).
-  local s = { pillow = pillow }
-  stink[pillow.id] = s
-  local ok, err = pcall(function()
-    s.flies = world.createObject(shared.FLIES_RECORD, 1)
-    s.flies:teleport(pillow.cell, pillow.position)
-  end)
-  if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
+-- Effects arrive in two waves (round-24): flies+buzz at FLIES_AT, the rot
+-- clouds join at CLOUDS_AT — an existing flies-only entry upgrades in place.
+local function ensureStink(pillow, wantClouds)
+  local s = stink[pillow.id]
+  if s and (s.cloudsDone or not wantClouds) then return end
+  if not s then
+    -- Track FIRST, then attempt each piece independently: a failing piece
+    -- must never abort the others or leave spawned objects untracked
+    -- (round-5: the light record failing left untracked fly swarms leaked).
+    s = { pillow = pillow }
+    stink[pillow.id] = s
+    local ok, err = pcall(function()
+      s.flies = world.createObject(shared.FLIES_RECORD, 1)
+      s.flies:teleport(pillow.cell, pillow.position)
+    end)
+    if not ok then print('LPH global: flies spawn failed: ' .. tostring(err)) end
+    -- Vanilla Flies sound record, same volume the vanilla emitter script uses
+    ok, err = pcall(function()
+      core.sound.playSound3d('flies', pillow, { loop = true, volume = 0.5 })
+    end)
+    if not ok then print('LPH global: buzz failed: ' .. tostring(err)) end
+  end
+  if not wantClouds then return end
+  s.cloudsDone = true
+  local ok, err
   -- Four dark clouds rising FROM the pillow fabric (round-16: "all the
   -- emitters need to come out of the pillow"): placed along the pillow's
   -- long axis (local Y via yaw) with slight jitter, varied sizes.
@@ -92,11 +105,6 @@ local function ensureStink(pillow)
     end)
     if not ok then print('LPH global: stink cloud spawn failed: ' .. tostring(err)) end
   end
-  -- Vanilla Flies sound record, same volume the vanilla emitter script uses
-  ok, err = pcall(function()
-    core.sound.playSound3d('flies', pillow, { loop = true, volume = 0.5 })
-  end)
-  if not ok then print('LPH global: buzz failed: ' .. tostring(err)) end
 end
 
 local function isTrackedEffect(object)
@@ -144,8 +152,15 @@ local function applyStage(pillow, cleanliness)
     end
   end
 
-  if stage >= shared.STINK_STAGE and stinkEffects and pillow.cell ~= nil then
-    ensureStink(pillow)
+  local clean = tonumber(cleanliness) or shared.MAX_CLEAN
+  if stinkEffects and pillow.cell ~= nil and clean <= shared.FLIES_AT then
+    local wantClouds = clean <= shared.CLOUDS_AT
+    local s = stink[pillow.id]
+    if s and s.cloudsDone and not wantClouds then
+      -- washed back above the cloud line: rebuild as flies-only
+      clearStink(pillow.id)
+    end
+    ensureStink(pillow, wantClouds)
   else
     clearStink(pillow.id)
   end
