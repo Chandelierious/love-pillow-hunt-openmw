@@ -279,6 +279,8 @@ local function textButton(label, onClick)
       text = label,
       textSize = 18,
       textColor = col(0.87, 0.79, 0.58), -- Morrowind-ish parchment yellow
+      textShadow = true,
+      textShadowColor = col(0, 0, 0),
     },
     events = {
       mouseClick = async:callback(onClick),
@@ -301,6 +303,8 @@ local function openMenu(data)
         text = cleanLine,
         textSize = 14,
         textColor = col(0.72, 0.70, 0.62),
+        textShadow = true,
+        textShadowColor = col(0, 0, 0),
       },
     },
     spacer(2),
@@ -310,6 +314,8 @@ local function openMenu(data)
         text = title,
         textSize = 20,
         textColor = col(0.92, 0.90, 0.83),
+        textShadow = true,
+        textShadowColor = col(0, 0, 0),
       },
     },
     spacer(14),
