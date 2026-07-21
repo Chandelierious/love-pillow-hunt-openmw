@@ -9,7 +9,6 @@ gross (they will get gross).
 
 1. Add this folder as a data path in the launcher.
 2. Enable **both** `Love_Pillow_Hunt.esp` and `LovePillowHunt.omwscripts`.
-3. OpenMW 0.51+. Remove the MWSE version if you have it.
 
 Settings live in Options → Scripts → The Great Love Pillow Hunt.
 
