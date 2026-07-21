@@ -18,9 +18,6 @@ Settings live in Options → Scripts → The Great Love Pillow Hunt.
 - Cleanliness shows in the pillow menu instead of the hover tooltip
   (OpenMW scripts can't touch engine tooltips).
 - The fade-to-black is homemade and a bit quicker than the original nap.
-
-## Stuff we bolted on since
-
 - **Pillows get visibly gross.** Dirt shows up in stages as the clean %
   drops — first splotches at 80%, bigger ones at 65%, full grease at 50%.
   At 35% flies move in (buzzing included), at 20% the rot clouds start
